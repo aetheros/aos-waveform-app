@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
 	logInfo( "starting" );
 
-	auto socket = aos::waveform_provider::open_socket();
+	auto socket = aos::waveform_provider::open_socket( 0 );
 	if( socket == -1 )
 	{
 		logError( "could not open waveform provider: " << strerror( errno ) );
@@ -27,17 +27,17 @@ int main(int argc, char *argv[])
 
 	std::ofstream ofile;
 
-	uint16_t expected_sync = 99;
+	uint16_t expected_sync = 0;
 	uint16_t expected_sequence = 0;
 	uint16_t write_count = 0;
 
 	while( true )
 	{
-		auto amount = ::read( socket, &packet, sizeof(packet) );
-		if( amount < 0 )
+		ssize_t amount = ::read( socket, &packet, sizeof(packet) );
+		if( amount <= 0 )
 		{
 			logError( "could not read waveform provider" );
-			break;
+			exit( 1 );
 		}
 
 		if( packet.sync != expected_sync or packet.sequence != expected_sequence )

@@ -4,7 +4,7 @@
 CXXFLAGS += -MMD -MP -Ilib
 LIBS += -lsdk_m2m -lsdk_aos -lm2mgen -lxsd_mtrsvc -lxsd -lcoap -ldtls -lcommon -lappfw
 
-EXE = aos_wc_app
+EXE = aos_waveform_app
 
 SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)
