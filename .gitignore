@@ -1,0 +1,8 @@
+*.o
+*.d
+*.swp
+*.swo
+config.mk
+aos_waveform_app
+*.aos
+*.pem
