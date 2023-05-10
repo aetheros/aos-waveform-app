@@ -45,17 +45,22 @@ int main(int argc, char *argv[])
 			logWarn( "unexpected packet: " << packet.sync << " " << packet.sequence
 				<< ", expected: " << expected_sync << " " << expected_sequence );
 			ofile.close();
-			ofile.open( "output", std::ios::binary | std::ios::trunc );
-			if( not ofile )
-			{
-				logError( "could not open output file" );
-			}
-			write_count = 0;
 			expected_sync = packet.sync;
 			expected_sequence = packet.sequence;
 		}
 
 		++expected_sequence;
+
+		if( not ofile )
+		{
+			ofile.open( "output", std::ios::binary | std::ios::trunc );
+			if( not ofile )
+			{
+				logError( "could not open output file" );
+				exit( 1 );
+			}
+			write_count = 0;
+		}
 
 		if( ofile and write_count < 10 )
 		{
