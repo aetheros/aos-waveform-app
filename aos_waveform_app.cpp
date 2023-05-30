@@ -10,6 +10,11 @@
 
 using namespace std::chrono_literals;
 
+void write_packet( std::ofstream& ofile, aos::waveform_provider::Packet const& packet );
+void write_OnePhaseOneElement( std::ofstream& ofile, aos::waveform_provider::Packet const& packet );
+void write_OnePhaseTwoElement( std::ofstream& ofile, aos::waveform_provider::Packet const& packet );
+void write_ThreePhase( std::ofstream& ofile, aos::waveform_provider::Packet const& packet );
+
 int main(int argc, char *argv[])
 {
     aos::AppMain appMain;
@@ -22,7 +27,6 @@ int main(int argc, char *argv[])
 	uint16_t write_count = 0;
 
 	aos::waveform_provider::Packet packet;
-	auto network = aos::waveform_provider::Network::Unknown;
 
 	bool start_new_file = true;
 	std::ofstream ofile;
@@ -50,25 +54,6 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		if( network == aos::waveform_provider::Network::Unknown )
-		{
-			network = packet.network;
-			switch( network )
-			{
-			case aos::waveform_provider::Network::OnePhaseOneElement:
-				logInfo( "u1 and i1 valid" );
-				break;
-			case aos::waveform_provider::Network::OnePhaseTwoElement:
-				logInfo( "u2-u3 and i2-i3 valid" );
-				break;
-			case aos::waveform_provider::Network::ThreePhase:
-				logInfo( "u1-u3 and i1-i3 valid" );
-				break;
-			default:
-				logError( "unexpected network configuration" );
-			}
-		}
-
 		if( packet.sync != expected_sync or packet.sequence != expected_sequence )
 		{
 			logWarn( "unexpected packet: " << packet.sync << " " << packet.sequence
@@ -94,10 +79,7 @@ int main(int argc, char *argv[])
 
 		if( ofile.is_open() and ofile and write_count < 10 )
 		{
-			for( int i=0; i<64; ++i )
-			{
-				ofile << aos::waveform_provider::voltage_scale() * packet.blocks[i].u1 << '\n';
-			}
+			write_packet( ofile, packet );
 			++write_count;
 			if( write_count >= 10 )
 			{
@@ -105,5 +87,70 @@ int main(int argc, char *argv[])
 				ofile.close();
 			}
 		}
+	}
+}
+
+void write_packet( std::ofstream& ofile, aos::waveform_provider::Packet const& packet )
+{
+	switch( packet.network )
+	{
+	case aos::waveform_provider::Network::OnePhaseOneElement:
+		write_OnePhaseOneElement( ofile, packet );
+		break;
+	case aos::waveform_provider::Network::OnePhaseTwoElement:
+		write_OnePhaseTwoElement( ofile, packet );
+		break;
+	case aos::waveform_provider::Network::ThreePhase:
+		write_ThreePhase( ofile, packet );
+		break;
+	default:
+		logError( "unexpected network configuration" );
+		ofile.close();
+		return;
+	}
+}
+
+void write_OnePhaseOneElement( std::ofstream& ofile, aos::waveform_provider::Packet const& packet )
+{
+	auto const uscale = aos::waveform_provider::voltage_scale();
+	auto const iscale = aos::waveform_provider::current_scale();
+
+	for( int i=0; i<64; ++i )
+	{
+		auto u1 = uscale * packet.blocks[i].u1;
+		auto i1 = iscale * packet.blocks[i].i1;
+		ofile << "u1: " << u1 << ", i1: " << i1 << '\n';
+	}
+}
+
+void write_OnePhaseTwoElement( std::ofstream& ofile, aos::waveform_provider::Packet const& packet )
+{
+	auto const uscale = aos::waveform_provider::voltage_scale();
+	auto const iscale = aos::waveform_provider::current_scale();
+
+	for( int i=0; i<64; ++i )
+	{
+		auto u2 = uscale * packet.blocks[i].u2;
+		auto i2 = iscale * packet.blocks[i].i2;
+		auto u3 = uscale * packet.blocks[i].u3;
+		auto i3 = iscale * packet.blocks[i].i3;
+		ofile << "u2: " << u2 << ", i2: " << i2 << ", u3: " << u3 << ", i3: " << i3 << '\n';
+	}
+}
+
+void write_ThreePhase( std::ofstream& ofile, aos::waveform_provider::Packet const& packet )
+{
+	auto const uscale = aos::waveform_provider::voltage_scale();
+	auto const iscale = aos::waveform_provider::current_scale();
+
+	for( int i=0; i<64; ++i )
+	{
+		auto u1 = uscale * packet.blocks[i].u1;
+		auto i1 = iscale * packet.blocks[i].i1;
+		auto u2 = uscale * packet.blocks[i].u2;
+		auto i2 = iscale * packet.blocks[i].i2;
+		auto u3 = uscale * packet.blocks[i].u3;
+		auto i3 = iscale * packet.blocks[i].i3;
+		ofile << "u1: " << u1 << ", i1: " << i1 << ", u2: " << u2 << ", i2: " << i2 << ", u3: " << u3 << ", i3: " << i3 << '\n';
 	}
 }
