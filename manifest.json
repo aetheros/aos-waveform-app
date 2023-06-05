@@ -2,11 +2,6 @@
 	"name": "aos_waveform_app",
 	"version": "1.0",
 	"exe-name": "aos_waveform_app",
-	"m2m": {
-		"app-name": "waveform-smpl",
-		"app-id": "Nra1.com.aos.iot",
-		"ae-rn": "waveform-smpl"
-	},
 	"files": [
 		"aos_waveform_app"
 	],

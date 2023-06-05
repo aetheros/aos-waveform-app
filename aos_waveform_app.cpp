@@ -1,4 +1,3 @@
-// vim: sw=4 expandtab
 // Copyright (c) Aetheros, Inc.  See COPYRIGHT
 #include <aos/AppMain.hpp>
 #include <aos/Log.hpp>
@@ -17,7 +16,7 @@ void write_ThreePhase( std::ofstream& ofile, aos::waveform_provider::Packet cons
 
 int main(int argc, char *argv[])
 {
-    aos::AppMain appMain;
+	aos::AppMain appMain;
 
 	logInfo( "starting" );
 
